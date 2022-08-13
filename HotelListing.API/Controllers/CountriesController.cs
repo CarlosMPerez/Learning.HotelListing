@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HotelListing.API.Data;
+using HotelListing.API.DTOs;
+using AutoMapper;
+using HotelListing.API.Contracts;
 
 namespace HotelListing.API.Controllers;
 
@@ -8,55 +11,52 @@ namespace HotelListing.API.Controllers;
 [ApiController]
 public class CountriesController : ControllerBase
 {
-    private readonly HotelListingDbContext ctx;
+    private readonly IMapper mppr;
+    private readonly ICountriesRepository repo;
 
-    public CountriesController(HotelListingDbContext context)
+    public CountriesController(IMapper mapper, ICountriesRepository repository)
     {
-        ctx = context;
+        this.mppr = mapper;
+        this.repo = repository;
     }
 
     // GET: api/Countries
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Country>>> GetCountries()
+    public async Task<ActionResult<IEnumerable<CountryItemDTO>>> GetCountries()
     {
-        var countries = await ctx.Countries.ToListAsync();
-        return Ok(countries);
+        var countries = await repo.GetAllAsync();
+        return Ok(mppr.Map<List<CountryItemDTO>>(countries));
     }
 
     // GET: api/Countries/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Country>> GetCountry(int id)
+    public async Task<ActionResult<CountryDTO>> GetCountry(int id)
     {
-        var country = await ctx.Countries.FindAsync(id);
-
+        var country = await repo.GetDetails(id);
         if (country == null) return NotFound();
-        
-        return Ok(country);
+        return Ok(mppr.Map<CountryDTO>(country));
     }
 
     // PUT: api/Countries/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutCountry(int id, Country country)
+    public async Task<IActionResult> PutCountry(int id, UpdateCountryDTO updateCountryDTO)
     {
-        if (id != country.Id) return BadRequest("Invalid Record Id");
+        if (id != updateCountryDTO.Id) return BadRequest("Invalid Record Id");
 
-        ctx.Entry(country).State = EntityState.Modified;
+        var country = await repo.GetAsync(id); // EF6 marks this file as watchable
+        if (country == null) return NotFound();
+        
+        mppr.Map(updateCountryDTO, country); // Automatically copies files from 1st into 2nd
 
         try
         {
-            await ctx.SaveChangesAsync();
+            await repo.UpdateAsync(country);
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!CountryExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
+            if (!await repo.Exists(id)) return NotFound();
+            else throw;
         }
 
         return NoContent();
@@ -65,10 +65,11 @@ public class CountriesController : ControllerBase
     // POST: api/Countries
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Country>> PostCountry(Country country)
+    public async Task<ActionResult<Country>> PostCountry(CreateCountryDTO createCountryDTO)
     {
-        ctx.Countries.Add(country);
-        await ctx.SaveChangesAsync();
+        var country = mppr.Map<Country>(createCountryDTO);
+
+        await repo.AddAsync(country);        
 
         return CreatedAtAction("GetCountry", new { id = country.Id }, country);
     }
@@ -77,18 +78,9 @@ public class CountriesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCountry(int id)
     {
-        var country = await ctx.Countries.FindAsync(id);
+        if (!await repo.Exists(id)) return NotFound();
 
-        if (country == null) return NotFound();
-
-        ctx.Countries.Remove(country);
-        await ctx.SaveChangesAsync();
-
+        await repo.DeleteAsync(id);
         return NoContent();
-    }
-
-    private bool CountryExists(int id)
-    {
-        return ctx.Countries.Any(e => e.Id == id);
     }
 }
