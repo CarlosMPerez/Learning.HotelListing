@@ -23,7 +23,6 @@ public class AutomapperConfig : Profile
 
         #region Hotels
         CreateMap<CreateHotelDTO, Hotel>().ReverseMap();
-        CreateMap<UpdateHotelDTO, Hotel>().ReverseMap();
         CreateMap<Hotel, HotelDTO>()
             .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.Country.Name));
         CreateMap<HotelDTO, Hotel>(); // Can't reverse map

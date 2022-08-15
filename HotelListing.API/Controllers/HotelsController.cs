@@ -23,10 +23,10 @@ public class HotelsController : ControllerBase
 
     // GET: api/Hotels
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<HotelItemDTO>>> GetHotels()
+    public async Task<ActionResult<IEnumerable<HotelDTO>>> GetHotels()
     {
         var hotels = await repo.GetAllAsync();
-        return Ok(mppr.Map<List<HotelItemDTO>>(hotels));
+        return Ok(mppr.Map<List<HotelDTO>>(hotels));
     }
 
     // GET: api/Hotels/5
@@ -35,14 +35,13 @@ public class HotelsController : ControllerBase
     {
         var hotel =  await repo.GetDetails(id);
         if (hotel == null) return NotFound();
-        var dto = mppr.Map<HotelDTO>(hotel);
-        return Ok(dto);
+        return Ok(mppr.Map<HotelDTO>(hotel));
     }
 
     // PUT: api/Hotels/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutHotel(int id, UpdateHotelDTO updateDTO)
+    public async Task<IActionResult> PutHotel(int id, HotelDTO updateDTO)
     {
         if (id != updateDTO.Id) return BadRequest("Invalid Record Id");
 

@@ -5,8 +5,6 @@ public class HotelDTO : BaseHotelDTO
 {
     public int Id { get; set; }      
 
-    public int CountryId { get; set; }
-
     public string CountryName { get; set; }
 
 }
