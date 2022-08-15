@@ -17,12 +17,18 @@ public class AutomapperConfig : Profile
 
         CreateMap<Country, CountryDTO>().ReverseMap();
 
-        // GetCountryDTO is going to be a readonly model, no need to reverse map
+        // CountryItemDTO is going to be a readonly model, no need to reverse map
         CreateMap<Country, CountryItemDTO>();
         #endregion
 
         #region Hotels
-        CreateMap<Hotel, HotelDTO>().ReverseMap();
+        CreateMap<CreateHotelDTO, Hotel>().ReverseMap();
+        CreateMap<UpdateHotelDTO, Hotel>().ReverseMap();
+        CreateMap<Hotel, HotelDTO>()
+            .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.Country.Name));
+        CreateMap<HotelDTO, Hotel>(); // Can't reverse map
+        // HotelItemDTO is going to be a readonly model, no need to reverse map
+        CreateMap<Hotel, HotelItemDTO>();
         #endregion 
     }
 }

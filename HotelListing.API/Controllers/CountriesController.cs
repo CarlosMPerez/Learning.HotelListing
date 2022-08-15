@@ -40,14 +40,14 @@ public class CountriesController : ControllerBase
     // PUT: api/Countries/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutCountry(int id, UpdateCountryDTO updateCountryDTO)
+    public async Task<IActionResult> PutCountry(int id, UpdateCountryDTO updateDTO)
     {
-        if (id != updateCountryDTO.Id) return BadRequest("Invalid Record Id");
+        if (id != updateDTO.Id) return BadRequest("Invalid Record Id");
 
         var country = await repo.GetAsync(id); // EF6 marks this file as watchable
         if (country == null) return NotFound();
         
-        mppr.Map(updateCountryDTO, country); // Automatically copies files from 1st into 2nd
+        mppr.Map(updateDTO, country); // Automatically copies files from 1st into 2nd
 
         try
         {
@@ -65,9 +65,9 @@ public class CountriesController : ControllerBase
     // POST: api/Countries
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Country>> PostCountry(CreateCountryDTO createCountryDTO)
+    public async Task<ActionResult<Country>> PostCountry(CreateCountryDTO createDTO)
     {
-        var country = mppr.Map<Country>(createCountryDTO);
+        var country = mppr.Map<Country>(createDTO);
 
         await repo.AddAsync(country);        
 
