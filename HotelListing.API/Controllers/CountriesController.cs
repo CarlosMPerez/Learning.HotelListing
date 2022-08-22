@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using HotelListing.API.Data;
+using HotelListing.API.Data.Models;
 using HotelListing.API.DTOs;
 using AutoMapper;
 using HotelListing.API.Contracts;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HotelListing.API.Controllers;
 
@@ -40,6 +41,7 @@ public class CountriesController : ControllerBase
     // PUT: api/Countries/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> PutCountry(int id, UpdateCountryDTO updateDTO)
     {
         if (id != updateDTO.Id) return BadRequest("Invalid Record Id");
@@ -65,6 +67,7 @@ public class CountriesController : ControllerBase
     // POST: api/Countries
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<Country>> PostCountry(CreateCountryDTO createDTO)
     {
         var country = mppr.Map<Country>(createDTO);
@@ -76,6 +79,7 @@ public class CountriesController : ControllerBase
 
     // DELETE: api/Countries/5
     [HttpDelete("{id}")]
+    [Authorize(Roles ="Administrator")]
     public async Task<IActionResult> DeleteCountry(int id)
     {
         if (!await repo.Exists(id)) return NotFound();

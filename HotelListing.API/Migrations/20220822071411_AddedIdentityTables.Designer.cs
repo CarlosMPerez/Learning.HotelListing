@@ -4,6 +4,7 @@ using HotelListing.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelListing.API.Migrations
 {
     [DbContext(typeof(HotelListingDbContext))]
-    partial class HotelListingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220822071411_AddedIdentityTables")]
+    partial class AddedIdentityTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +24,7 @@ namespace HotelListing.API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("HotelListing.API.Data.Models.APIUser", b =>
+            modelBuilder.Entity("HotelListing.API.Data.APIUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -93,7 +95,7 @@ namespace HotelListing.API.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("HotelListing.API.Data.Models.Country", b =>
+            modelBuilder.Entity("HotelListing.API.Data.Country", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -2116,7 +2118,7 @@ namespace HotelListing.API.Migrations
                         });
                 });
 
-            modelBuilder.Entity("HotelListing.API.Data.Models.Hotel", b =>
+            modelBuilder.Entity("HotelListing.API.Data.Hotel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -2252,22 +2254,6 @@ namespace HotelListing.API.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "3a0a8696-3097-4b00-9485-942126ffbc82",
-                            ConcurrencyStamp = "bfb953d5-31ea-4edf-9f49-12887c252b4b",
-                            Name = "Administrator",
-                            NormalizedName = "ADMINISTRATOR"
-                        },
-                        new
-                        {
-                            Id = "9f5d4534-c1c9-4e80-a211-7aada5727c87",
-                            ConcurrencyStamp = "43df5606-b6d2-49d3-9e62-0e829cde0623",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -2376,9 +2362,9 @@ namespace HotelListing.API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("HotelListing.API.Data.Models.Hotel", b =>
+            modelBuilder.Entity("HotelListing.API.Data.Hotel", b =>
                 {
-                    b.HasOne("HotelListing.API.Data.Models.Country", "Country")
+                    b.HasOne("HotelListing.API.Data.Country", "Country")
                         .WithMany("Hotels")
                         .HasForeignKey("CountryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2398,7 +2384,7 @@ namespace HotelListing.API.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("HotelListing.API.Data.Models.APIUser", null)
+                    b.HasOne("HotelListing.API.Data.APIUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2407,7 +2393,7 @@ namespace HotelListing.API.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("HotelListing.API.Data.Models.APIUser", null)
+                    b.HasOne("HotelListing.API.Data.APIUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2422,7 +2408,7 @@ namespace HotelListing.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("HotelListing.API.Data.Models.APIUser", null)
+                    b.HasOne("HotelListing.API.Data.APIUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2431,14 +2417,14 @@ namespace HotelListing.API.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("HotelListing.API.Data.Models.APIUser", null)
+                    b.HasOne("HotelListing.API.Data.APIUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("HotelListing.API.Data.Models.Country", b =>
+            modelBuilder.Entity("HotelListing.API.Data.Country", b =>
                 {
                     b.Navigation("Hotels");
                 });

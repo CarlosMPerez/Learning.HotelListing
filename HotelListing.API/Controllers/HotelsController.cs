@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using HotelListing.API.Data;
+using HotelListing.API.Data.Models;
 using HotelListing.API.DTOs;
 using AutoMapper;
 using HotelListing.API.Contracts;

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using HotelListing.API.Data;
+using HotelListing.API.Data.Models;
 using HotelListing.API.DTOs;
 
 namespace HotelListing.API.Configurations;
@@ -28,6 +28,12 @@ public class AutomapperConfig : Profile
         CreateMap<HotelDTO, Hotel>(); // Can't reverse map
         // HotelItemDTO is going to be a readonly model, no need to reverse map
         CreateMap<Hotel, HotelItemDTO>();
-        #endregion 
+        #endregion
+
+        #region API Users
+        CreateMap<APIUserDTO, APIUser>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email.Substring(0, src.Email.IndexOf("@"))))
+            .ReverseMap();
+        #endregion
     }
 }
