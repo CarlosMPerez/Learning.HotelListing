@@ -23,13 +23,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Identity Core
-builder.Services.AddIdentityCore<APIUser>()
-    .AddRoles<IdentityRole>()
-    .AddTokenProvider<DataProtectorTokenProvider<APIUser>>("HotelListingApi")
-    .AddEntityFrameworkStores<HotelListingDbContext>()
-    .AddDefaultTokenProviders();
-
 // Add CORS support
 builder.Services.AddCors(option =>
 {
@@ -66,6 +59,13 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
     };
 });
+
+// Identity Core
+builder.Services.AddIdentityCore<APIUser>()
+    .AddRoles<IdentityRole>()
+    .AddTokenProvider<DataProtectorTokenProvider<APIUser>>("HotelListingApi")
+    .AddEntityFrameworkStores<HotelListingDbContext>()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
 

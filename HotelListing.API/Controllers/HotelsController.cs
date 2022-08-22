@@ -23,6 +23,7 @@ public class HotelsController : ControllerBase
 
     // GET: api/Hotels
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<HotelDTO>>> GetHotels()
     {
         var hotels = await repo.GetAllAsync();

@@ -106,26 +106,15 @@ public class AuthManager : IAuthManager
     {
         await usrMgr.RemoveAuthenticationTokenAsync(user, LOGIN_PROVIDER, REFRESHTOKEN);
         var newRefreshToken = await usrMgr.GenerateUserTokenAsync(user, LOGIN_PROVIDER, REFRESHTOKEN);
-        var result = await usrMgr.SetAuthenticationTokenAsync(user, LOGIN_PROVIDER, REFRESHTOKEN, newRefreshToken);
+        await usrMgr.SetAuthenticationTokenAsync(user, LOGIN_PROVIDER, REFRESHTOKEN, newRefreshToken);
         return newRefreshToken;
     }
 
-    public async Task<AuthResponseDTO> VerifyRefreshToken(AuthResponseDTO request)
+    public async Task<AuthResponseDTO> VerifyRefreshToken(string userId, string refreshToken)
     {
-        var secTokenHandler = new JwtSecurityTokenHandler();
-        var tokencontent = secTokenHandler.ReadJwtToken(request.Token);
-        var userName = tokencontent.Claims
-            .ToList()
-            .FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub)?
-            .Value;
-        user = await usrMgr.FindByNameAsync(userName);
-        // or
-        // user = await usrMgr.FindByIdAsync(request.UserId);
-
-        if (user == null || user.Id != request.UserId) return null;
-
+        user = await usrMgr.FindByIdAsync(userId);
         var isValidRefreshToken = await usrMgr
-            .VerifyUserTokenAsync(user, LOGIN_PROVIDER, REFRESHTOKEN, request.RefreshToken);
+            .VerifyUserTokenAsync(user, LOGIN_PROVIDER, REFRESHTOKEN, refreshToken);
         if(isValidRefreshToken)
         {
             var token = await GenerateToken();
@@ -133,7 +122,7 @@ public class AuthManager : IAuthManager
             {
                 Token = token,
                 UserId = user.Id,
-                RefreshToken = await CreateRefreshToken()
+                RefreshToken = refreshToken
             };
         }
 

@@ -2,6 +2,7 @@
 using HotelListing.API.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Web;
 
 namespace HotelListing.API.Controllers;
 
@@ -111,9 +112,9 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> RefreshToken([FromBody] AuthResponseDTO request)
+    public async Task<ActionResult> RefreshToken(string userId, string refreshToken)
     {
-        var authResponse = await authMgr.VerifyRefreshToken(request);
+        var authResponse = await authMgr.VerifyRefreshToken(userId, HttpUtility.UrlEncode(refreshToken));
         if (authResponse == null) return Unauthorized();
 
         return Ok(authResponse);
