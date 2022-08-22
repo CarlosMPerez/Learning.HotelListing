@@ -55,6 +55,24 @@ public class AuthManager : IAuthManager
         return result.Errors;
     }
 
+    public async Task<IEnumerable<IdentityError>> PromoteToAdmin(string userName)
+    {
+        var user = await usrMgr.FindByNameAsync(userName);
+        if (user == null) return null;
+
+        var idResult = await usrMgr.AddToRoleAsync(user, "Administrator");
+        return idResult.Errors;
+    }
+
+    public async Task<IEnumerable<IdentityError>> DemoteToUser(string userName)
+    {
+        var user = await usrMgr.FindByNameAsync(userName);
+        if (user == null) return null;
+
+        var idResult = await usrMgr.RemoveFromRoleAsync(user, "Administrator");
+        return idResult.Errors;
+    }
+
     private async Task<string> GenerateToken()
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(cfg["JwtSettings:Key"]));

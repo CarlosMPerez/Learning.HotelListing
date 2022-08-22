@@ -1,5 +1,6 @@
 ﻿using HotelListing.API.Contracts;
 using HotelListing.API.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelListing.API.Controllers;
@@ -14,7 +15,7 @@ public class AccountController : ControllerBase
         authMgr = authManager;
     }
 
-    // api/Account/register
+    // api/account/register
     [HttpPost]
     [Route("register")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -35,7 +36,62 @@ public class AccountController : ControllerBase
         return Ok(usrDTO);
     }
 
-    // api/Account/login
+    // api/account/promote
+    [HttpPatch]
+    [Route("promote")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Roles ="Administrator")]
+    public async Task<ActionResult> Promote(string userName)
+    {
+        var errors = await authMgr.PromoteToAdmin(userName);
+
+        if (errors == null) return NotFound();
+        else
+        {
+            if (errors.Any())
+            {
+                foreach (var error in errors)
+                {
+                    ModelState.AddModelError(error.Code, error.Description);
+                }
+                return BadRequest(ModelState);
+            }
+
+            return Ok();
+        }
+    }
+
+    // api/account/demote
+    // Diff between PUT y PATCH https://www.bbvanexttechnologies.com/blogs/como-utilizar-los-metodos-put-y-patch-en-el-diseno-de-tus-apis-restful/
+    [HttpPatch]
+    [Route("demote")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Roles = "Administrator")]
+    public async Task<ActionResult> Demote(string userName)
+    {
+        var errors = await authMgr.DemoteToUser(userName);
+
+        if (errors == null) return NotFound();
+        else
+        {
+            if (errors.Any())
+            {
+                foreach (var error in errors)
+                {
+                    ModelState.AddModelError(error.Code, error.Description);
+                }
+                return BadRequest(ModelState);
+            }
+
+            return Ok();
+        }
+    }
+
+    // api/account/login
     [HttpPost]
     [Route("login")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -48,7 +104,8 @@ public class AccountController : ControllerBase
 
         return Ok(authResponse);
     }
-    // api/Account/refreshtoken
+    
+    // api/account/refreshtoken
     [HttpPost]
     [Route("refreshtoken")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

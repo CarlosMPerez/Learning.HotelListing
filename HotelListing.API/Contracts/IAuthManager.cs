@@ -12,4 +12,8 @@ public interface IAuthManager
     Task<string> CreateRefreshToken();
 
     Task<AuthResponseDTO> VerifyRefreshToken(AuthResponseDTO request);
+
+    Task<IEnumerable<IdentityError>> PromoteToAdmin(string userName);
+
+    Task<IEnumerable<IdentityError>> DemoteToUser(string userName);
 }
