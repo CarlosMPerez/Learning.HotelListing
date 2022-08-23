@@ -16,23 +16,30 @@ public class AuthManager : IAuthManager
     private readonly UserManager<APIUser> usrMgr;
     private readonly IConfiguration cfg;
     private APIUser user;
+    private readonly ILogger<AuthManager> lggr;
 
     private const string LOGIN_PROVIDER = "HotelListingApi";
     private const string REFRESHTOKEN = "RefreshToken";
 
-    public AuthManager(IMapper mapper, UserManager<APIUser> userManager, IConfiguration configuration)
+    public AuthManager(IMapper mapper, UserManager<APIUser> userManager, IConfiguration configuration, ILogger<AuthManager> logger)
     {
         mppr = mapper;
         usrMgr = userManager;
         cfg = configuration;
+        lggr = logger;
     }
 
     public async Task<AuthResponseDTO> Login(LoginUserDTO loginDTO)
     {
+        lggr.LogInformation($"Login for user {loginDTO.UserName}");
         user = await usrMgr.FindByNameAsync(loginDTO.UserName);
         bool isValidUser = await usrMgr.CheckPasswordAsync(user, loginDTO.Password);
 
-        if (user == null || isValidUser == false) return null;
+        if (user == null || isValidUser == false)
+        {
+            lggr.LogWarning($"User {loginDTO.UserName} not found");
+            return null;
+        }
 
         var token = await GenerateToken();
         return new AuthResponseDTO
@@ -40,18 +47,14 @@ public class AuthManager : IAuthManager
             Token = token,
             UserId = user.Id,
             RefreshToken = await CreateRefreshToken()
-
         };
     }
 
     public async Task<IEnumerable<IdentityError>> Register(APIUserDTO apiUserDTO)
     {
         user = mppr.Map<APIUser>(apiUserDTO);
-
         var result = await usrMgr.CreateAsync(user, apiUserDTO.Password);
-
         if(result.Succeeded) await usrMgr.AddToRoleAsync(user, "User");
-
         return result.Errors;
     }
 

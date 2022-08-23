@@ -5,6 +5,7 @@ using HotelListing.API.DTOs;
 using AutoMapper;
 using HotelListing.API.Contracts;
 using Microsoft.AspNetCore.Authorization;
+using HotelListing.API.Exceptions;
 
 namespace HotelListing.API.Controllers;
 
@@ -34,7 +35,7 @@ public class CountriesController : ControllerBase
     public async Task<ActionResult<CountryDTO>> GetCountry(int id)
     {
         var country = await repo.GetDetails(id);
-        if (country == null) return NotFound();
+        if (country == null) throw new NotFoundException(nameof(GetCountry), id);  //return NotFound();
         return Ok(mppr.Map<CountryDTO>(country));
     }
 
@@ -47,8 +48,8 @@ public class CountriesController : ControllerBase
         if (id != updateDTO.Id) return BadRequest("Invalid Record Id");
 
         var country = await repo.GetAsync(id); // EF6 marks this file as watchable
-        if (country == null) return NotFound();
-        
+        if (country == null) throw new NotFoundException(nameof(GetCountry), id);  //return NotFound();
+
         mppr.Map(updateDTO, country); // Automatically copies files from 1st into 2nd
 
         try
@@ -82,7 +83,7 @@ public class CountriesController : ControllerBase
     [Authorize(Roles ="Administrator")]
     public async Task<IActionResult> DeleteCountry(int id)
     {
-        if (!await repo.Exists(id)) return NotFound();
+        if (!await repo.Exists(id)) throw new NotFoundException(nameof(GetCountry), id);  //return NotFound();
 
         await repo.DeleteAsync(id);
         return NoContent();
