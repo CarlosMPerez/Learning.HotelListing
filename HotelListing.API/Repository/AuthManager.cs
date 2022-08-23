@@ -110,11 +110,20 @@ public class AuthManager : IAuthManager
         return newRefreshToken;
     }
 
-    public async Task<AuthResponseDTO> VerifyRefreshToken(string userId, string refreshToken)
+    public async Task<AuthResponseDTO> VerifyRefreshToken(AuthResponseDTO request)
     {
-        user = await usrMgr.FindByIdAsync(userId);
+        var jwtSecTokenHandler = new JwtSecurityTokenHandler();
+        var tokenContent = jwtSecTokenHandler.ReadJwtToken(request.Token);
+        var userName = tokenContent.Claims
+            .ToList()
+            .FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub)?
+            .Value;
+        user = await usrMgr.FindByNameAsync(userName);
+
+        if (user == null || user.Id != request.UserId) return null;
+
         var isValidRefreshToken = await usrMgr
-            .VerifyUserTokenAsync(user, LOGIN_PROVIDER, REFRESHTOKEN, refreshToken);
+            .VerifyUserTokenAsync(user, LOGIN_PROVIDER, REFRESHTOKEN, request.RefreshToken);
         if(isValidRefreshToken)
         {
             var token = await GenerateToken();
@@ -122,7 +131,7 @@ public class AuthManager : IAuthManager
             {
                 Token = token,
                 UserId = user.Id,
-                RefreshToken = refreshToken
+                RefreshToken = await CreateRefreshToken()
             };
         }
 
