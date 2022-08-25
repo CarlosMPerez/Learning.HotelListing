@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using HotelListing.API.Core.Contracts;
+using HotelListing.API.Core.DTOs;
+using HotelListing.API.Core.Exceptions;
 using HotelListing.API.Data;
 using HotelListing.API.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,10 +20,14 @@ public class HotelsRepository : GenericRepository<Hotel>, IHotelsRepository
         this.mapper = mapper;
 	}
 
-    public async Task<Hotel> GetDetails(int id)
+    public async Task<HotelDTO> GetDetails(int id)
     {
-        return await ctx.Hotels
+        var hotel = await ctx.Hotels
             .Include(x => x.Country)
+            .ProjectTo<HotelDTO>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (hotel == null) throw new NotFoundException(nameof(GetDetails), id);
+        return hotel;
     }
 }

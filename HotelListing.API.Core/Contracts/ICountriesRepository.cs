@@ -1,8 +1,9 @@
-﻿using HotelListing.API.Data.Models;
+﻿using HotelListing.API.Core.DTOs;
+using HotelListing.API.Data.Models;
 
 namespace HotelListing.API.Core.Contracts;
 
 public interface ICountriesRepository : IGenericRepository<Country>
 {
-    Task<Country> GetDetails(int id);
+    Task<CountryDTO> GetDetails(int id);
 }

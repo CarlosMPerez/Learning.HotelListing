@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using HotelListing.API.Data.Models;
 using HotelListing.API.Core.DTOs;
-using AutoMapper;
 using HotelListing.API.Core.Contracts;
 using Microsoft.AspNetCore.Authorization;
-using HotelListing.API.Core.Exceptions;
 using Microsoft.AspNetCore.OData.Query;
+using HotelListing.API.Core.Middleware;
 
 namespace HotelListing.API.Controllers;
 
@@ -14,57 +12,89 @@ namespace HotelListing.API.Controllers;
 [ApiController]
 public class CountriesController : ControllerBase
 {
-    private readonly IMapper mppr;
     private readonly ICountriesRepository repo;
 
-    public CountriesController(IMapper mapper, ICountriesRepository repository)
+    /// <summary>
+    /// Ctor injecting the concrete repository
+    /// </summary>
+    /// <param name="repository">The ICountriesRepository</param>
+    public CountriesController(ICountriesRepository repository)
     {
-        this.mppr = mapper;
         this.repo = repository;
     }
 
-    // GET: api/Countries/GetAll
+    /// <summary>
+    /// ROUTE => GET: api/Countries/GetAll
+    /// Get a list of all countries without parameters
+    /// </summary>
+    /// <returns>List of CountryItemDTO</returns>
     [HttpGet("GetAll")]
     [EnableQuery]
     public async Task<ActionResult<IEnumerable<CountryItemDTO>>> GetCountries()
     {
-        var countries = await repo.GetAllAsync();
-        return Ok(mppr.Map<List<CountryItemDTO>>(countries));
+        var countries = await repo.GetAllAsync<CountryItemDTO>();
+        return Ok(countries);
     }
 
-    // GET: api/Countries/?StartIndex=0&PageSize=25&PageNumber=1
+    /// <summary>
+    /// ROUTE => GET: api/Countries/?StartIndex=0&PageSize=25&PageNumber=1
+    /// Get a list of all countries using parameters (for pagination)
+    /// </summary>
+    /// <param name="queryParams">The query parameters</param>
+    /// <returns>List of CountryItemDTO</returns>
     [HttpGet]
     public async Task<ActionResult<PagedResult<CountryItemDTO>>> GetPagedCountries([FromQuery] QueryParameters queryParams)
     {
-        var pagedCountriesResult = await repo.GetAllAsync<CountryItemDTO>(queryParams);
-        return Ok(pagedCountriesResult);
+        var pagedResult = await repo.GetAllAsync<CountryItemDTO>(queryParams);
+        return Ok(pagedResult);
     }
 
-    // GET: api/Countries/5
+    /// <summary>
+    /// ROUTE => GET: api/Countries/5
+    /// Gets a single CountryDTO by its Id
+    /// </summary>
+    /// <param name="id">the id</param>
+    /// <returns>A CountryDTO</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<CountryDTO>> GetCountry(int id)
     {
         var country = await repo.GetDetails(id);
-        if (country == null) throw new NotFoundException(nameof(GetCountry), id);  //return NotFound();
-        return Ok(mppr.Map<CountryDTO>(country));
+        return Ok(country);
     }
 
-    // PUT: api/Countries/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// <summary>
+    /// ROUTE => POST: api/Countries
+    /// Inserts a new country into the database
+    /// Authorization needed
+    /// </summary>
+    /// <param name="createDTO">The new country data</param>
+    /// <returns>the created country DTO</returns>
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<CountryDTO>> PostCountry([FromBody] CreateCountryDTO createDTO)
+    {
+        var country = await repo.AddAsync<CreateCountryDTO, CountryDTO>(createDTO);
+        return CreatedAtAction(nameof(PostCountry), new { id = country.Id }, country);
+    }
+
+    /// <summary>
+    /// ROUTE => PUT: api/Countries/5
+    /// Updates an existing country in the database
+    /// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    /// Authorization needed
+    /// </summary>
+    /// <param name="id">The id of the country</param>
+    /// <param name="updateDTO">The updated country data</param>
+    /// <returns>An action result</returns>
     [HttpPut("{id}")]
     [Authorize]
     public async Task<IActionResult> PutCountry(int id, UpdateCountryDTO updateDTO)
     {
         if (id != updateDTO.Id) return BadRequest("Invalid Record Id");
 
-        var country = await repo.GetAsync(id); // EF6 marks this file as watchable
-        if (country == null) throw new NotFoundException(nameof(GetCountry), id);  //return NotFound();
-
-        mppr.Map(updateDTO, country); // Automatically copies files from 1st into 2nd
-
         try
         {
-            await repo.UpdateAsync(country);
+            await repo.UpdateAsync(id, updateDTO);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -75,26 +105,17 @@ public class CountriesController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/Countries
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPost]
-    [Authorize]
-    public async Task<ActionResult<Country>> PostCountry(CreateCountryDTO createDTO)
-    {
-        var country = mppr.Map<Country>(createDTO);
-
-        await repo.AddAsync(country);        
-
-        return CreatedAtAction("GetCountry", new { id = country.Id }, country);
-    }
-
-    // DELETE: api/Countries/5
+    /// <summary>
+    /// ROUTE => DELETE: api/Countries/5
+    /// Deletes the entity with the provided id
+    /// Admin authorization needed
+    /// </summary>
+    /// <param name="id">the Id of the entity to delete</param>
+    /// <returns>No Content</returns>
     [HttpDelete("{id}")]
     [Authorize(Roles ="Administrator")]
     public async Task<IActionResult> DeleteCountry(int id)
     {
-        if (!await repo.Exists(id)) throw new NotFoundException(nameof(GetCountry), id);  //return NotFound();
-
         await repo.DeleteAsync(id);
         return NoContent();
     }

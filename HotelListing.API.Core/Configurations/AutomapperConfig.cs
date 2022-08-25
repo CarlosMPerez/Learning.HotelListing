@@ -27,7 +27,8 @@ public class AutomapperConfig : Profile
             .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.Country.Name));
         CreateMap<HotelDTO, Hotel>(); // Can't reverse map
         // HotelItemDTO is going to be a readonly model, no need to reverse map
-        CreateMap<Hotel, HotelItemDTO>();
+        CreateMap<Hotel, HotelItemDTO>()
+            .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.Country.Name));
         #endregion
 
         #region API Users
