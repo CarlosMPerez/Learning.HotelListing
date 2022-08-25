@@ -2,14 +2,17 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using HotelListing.API.Data;
 using HotelListing.API.Data.Models;
-using HotelListing.API.Configurations;
-using HotelListing.API.Contracts;
-using HotelListing.API.Repository;
+using HotelListing.API.Core.Configurations;
+using HotelListing.API.Core.Contracts;
+using HotelListing.API.Core.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using HotelListing.API.Middleware;
+using Microsoft.AspNetCore.Mvc;
+using HotelListing.API.Core.Middleware;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.OData;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +35,26 @@ builder.Services.AddCors(option =>
                 .AllowAnyOrigin()
                 .AllowAnyMethod());
 });
+
+
+builder.Services.AddApiVersioning(options =>
+{
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        new QueryStringApiVersionReader("api-version"), // use version as a parameter of the request
+        new HeaderApiVersionReader("X-Version"), // use version as a parameter in the HEADER of the request
+        new MediaTypeApiVersionReader("ver")
+        );
+});
+
+builder.Services.AddVersionedApiExplorer(
+    options =>
+    {
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
 
 // Add Serilog
 builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
@@ -59,6 +82,11 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
     };
+});
+
+builder.Services.AddControllers().AddOData(options =>
+{
+    options.Select().Filter().OrderBy();
 });
 
 // Identity Core

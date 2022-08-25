@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HotelListing.API.Data.Models;
-using HotelListing.API.DTOs;
+using HotelListing.API.Core.DTOs;
 using AutoMapper;
-using HotelListing.API.Contracts;
+using HotelListing.API.Core.Contracts;
 using Microsoft.AspNetCore.Authorization;
 
 namespace HotelListing.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[ApiVersion("2.0")]
 public class HotelsController : ControllerBase
 {
     private readonly IMapper mppr;
@@ -23,7 +24,6 @@ public class HotelsController : ControllerBase
 
     // GET: api/Hotels
     [HttpGet]
-    [Authorize]
     public async Task<ActionResult<IEnumerable<HotelDTO>>> GetHotels()
     {
         var hotels = await repo.GetAllAsync();

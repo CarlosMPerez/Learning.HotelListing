@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HotelListing.API.Data.Models;
-using HotelListing.API.DTOs;
+using HotelListing.API.Core.DTOs;
 using AutoMapper;
-using HotelListing.API.Contracts;
+using HotelListing.API.Core.Contracts;
 using Microsoft.AspNetCore.Authorization;
-using HotelListing.API.Exceptions;
+using HotelListing.API.Core.Exceptions;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace HotelListing.API.Controllers;
 
@@ -22,12 +23,21 @@ public class CountriesController : ControllerBase
         this.repo = repository;
     }
 
-    // GET: api/Countries
-    [HttpGet]
+    // GET: api/Countries/GetAll
+    [HttpGet("GetAll")]
+    [EnableQuery]
     public async Task<ActionResult<IEnumerable<CountryItemDTO>>> GetCountries()
     {
         var countries = await repo.GetAllAsync();
         return Ok(mppr.Map<List<CountryItemDTO>>(countries));
+    }
+
+    // GET: api/Countries/?StartIndex=0&PageSize=25&PageNumber=1
+    [HttpGet]
+    public async Task<ActionResult<PagedResult<CountryItemDTO>>> GetPagedCountries([FromQuery] QueryParameters queryParams)
+    {
+        var pagedCountriesResult = await repo.GetAllAsync<CountryItemDTO>(queryParams);
+        return Ok(pagedCountriesResult);
     }
 
     // GET: api/Countries/5
